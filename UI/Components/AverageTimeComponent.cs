@@ -2,7 +2,6 @@
 using LiveSplit.TimeFormatters;
 using LiveSplit.UI;
 using LiveSplit.UI.Components;
-using LiveSplit.Web.Share;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -12,16 +11,15 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using SpeedrunComSharp;
-using System.Collections.ObjectModel;
 using LiveSplit.Options;
 
-namespace LiveSplit.WorldRecord.UI.Components
+namespace LiveSplit.AverageTime.UI.Components
 {
-    public class WorldRecordComponent : IComponent
+    public class AverageTimeComponent : IComponent
     {
         protected InfoTextComponent InternalComponent { get; set; }
 
-        protected WorldRecordSettings Settings { get; set; }
+        protected AverageTimeSettings Settings { get; set; }
 
         private GraphicsCache Cache { get; set; }
         private ITimeFormatter TimeFormatter { get; set; }
@@ -29,12 +27,11 @@ namespace LiveSplit.WorldRecord.UI.Components
         private LiveSplitState State { get; set; }
         private TimeStamp LastUpdate { get; set; }
         private TimeSpan RefreshInterval { get; set; }
-        public Record WorldRecord { get; protected set; }
-        public ReadOnlyCollection<Record> AllTies { get; protected set; }
+        public Record AverageTime { get; protected set; }
         private bool IsLoading { get; set; }
         private SpeedrunComClient Client { get; set; }
 
-        public string ComponentName => "World Record";
+        public string ComponentName => "Average Time";
 
         public float PaddingTop => InternalComponent.PaddingTop;
         public float PaddingLeft => InternalComponent.PaddingLeft;
@@ -48,7 +45,7 @@ namespace LiveSplit.WorldRecord.UI.Components
 
         public IDictionary<string, Action> ContextMenuControls => null;
 
-        public WorldRecordComponent(LiveSplitState state)
+        public AverageTimeComponent(LiveSplitState state)
         {
             State = state;
 
@@ -58,8 +55,8 @@ namespace LiveSplit.WorldRecord.UI.Components
             Cache = new GraphicsCache();
             TimeFormatter = new AutomaticPrecisionTimeFormatter();
             LocalTimeFormatter = new RegularTimeFormatter();
-            InternalComponent = new InfoTextComponent("World Record", TimeFormatConstants.DASH);
-            Settings = new WorldRecordSettings()
+            InternalComponent = new InfoTextComponent("Average Time", TimeFormatConstants.DASH);
+            Settings = new AverageTimeSettings()
             {
                 CurrentState = state
             };
@@ -69,11 +66,11 @@ namespace LiveSplit.WorldRecord.UI.Components
         {
         }
 
-        private void RefreshWorldRecord()
+        private void RefreshAverageTime()
         {
             LastUpdate = TimeStamp.Now;
 
-            WorldRecord = null;
+            AverageTime = null;
 
             try
             {
@@ -99,8 +96,8 @@ namespace LiveSplit.WorldRecord.UI.Components
 
                     if (leaderboard != null)
                     {
-                        WorldRecord = leaderboard.Records.FirstOrDefault();
-                        AllTies = leaderboard.Records;
+                        // TODO: This is where we get average time
+                        AverageTime = leaderboard.Records.FirstOrDefault();
                     }
                 }
             }
@@ -110,79 +107,46 @@ namespace LiveSplit.WorldRecord.UI.Components
             }
 
             IsLoading = false;
-            ShowWorldRecord(State.Layout.Mode);
+            ShowAverageTime(State.Layout.Mode);
         }
 
-        private void ShowWorldRecord(LayoutMode mode)
+        private void ShowAverageTime(LayoutMode mode)
         {
             var centeredText = Settings.CenteredText && !Settings.Display2Rows && mode == LayoutMode.Vertical;
-            if (WorldRecord != null)
+            if (AverageTime != null)
             {
-                var time = WorldRecord.Times.Primary;
-                var timingMethod = State.CurrentTimingMethod;
+                var time = AverageTime.Times.Primary;
                 var game = State.Run.Metadata.Game;
                 if (game != null)
                 {
-                    timingMethod = game.Ruleset.DefaultTimingMethod.ToLiveSplitTimingMethod();
                     LocalTimeFormatter.Accuracy = game.Ruleset.ShowMilliseconds ? TimeAccuracy.Hundredths : TimeAccuracy.Seconds;
                 }
 
                 var formatted = TimeFormatter.Format(time);
-                var isLoggedIn = SpeedrunCom.Client.IsAccessTokenValid;
-                var userName = string.Empty;
-                if (isLoggedIn)
-                    userName = SpeedrunCom.Client.Profile.Name;
-
-                var runners = string.Join(", ", AllTies.Select(t => string.Join(" & ", t.Players.Select(p =>
-                    isLoggedIn && p.Name == userName ? "me" : p.Name))));
-                var tieCount = AllTies.Count;
-
-                var finalTime = GetPBTime(timingMethod);
-                if (IsPBTimeLower(finalTime, time, game != null ? game.Ruleset.ShowMilliseconds : false))
-                {
-                    formatted = LocalTimeFormatter.Format(finalTime);
-                    runners = State.Run.Metadata.Category.Players.Value > 1 ? "us" : "me";
-                    tieCount = 1;
-                }
 
                 if (centeredText)
                 {
                     var textList = new List<string>();
 
-                    textList.Add(string.Format("World Record is {0} by {1}", formatted, runners));
-                    textList.Add(string.Format("World Record: {0} by {1}", formatted, runners));
-                    textList.Add(string.Format("WR: {0} by {1}", formatted, runners));
-                    textList.Add(string.Format("WR is {0} by {1}", formatted, runners));
-
-                    if (tieCount > 1)
-                    {
-                        textList.Add(string.Format("World Record is {0} ({1}-way tie)", formatted, tieCount));
-                        textList.Add(string.Format("World Record: {0} ({1}-way tie)", formatted, tieCount));
-                        textList.Add(string.Format("WR: {0} ({1}-way tie)", formatted, tieCount));
-                        textList.Add(string.Format("WR is {0} ({1}-way tie)", formatted, tieCount));
-                    }
+                    textList.Add(string.Format("Average Time is {0}", formatted));
+                    textList.Add(string.Format("Average Time: {0}", formatted));
+                    textList.Add(string.Format("Avg: {0}", formatted));
+                    textList.Add(string.Format("Avg. is {0}", formatted));
 
                     InternalComponent.InformationName = textList.First();
                     InternalComponent.AlternateNameText = textList;
                 }
                 else
                 {
-                    if (tieCount > 1)
-                    {
-                        InternalComponent.InformationValue = string.Format("{0} ({1}-way tie)", formatted, tieCount);
-                    }
-                    else
-                    {
-                        InternalComponent.InformationValue = string.Format("{0} by {1}", formatted, runners);
-                    }
+                    InternalComponent.InformationValue = string.Format("{0}", formatted);
                 }
             }
             else if (IsLoading)
             {
                 if (centeredText)
                 {
-                    InternalComponent.InformationName = "Loading World Record...";
-                    InternalComponent.AlternateNameText = new[] { "Loading WR..." };
+                    InternalComponent.InformationName = "Loading Average Time...";
+                    InternalComponent.AlternateNameText = new[] { "Loading Avg..." };
                 }
                 else
                 {
@@ -193,8 +157,8 @@ namespace LiveSplit.WorldRecord.UI.Components
             {
                 if (centeredText)
                 {
-                    InternalComponent.InformationName = "Unknown World Record";
-                    InternalComponent.AlternateNameText = new[] { "Unknown WR" };
+                    InternalComponent.InformationName = "Unknown Average Time";
+                    InternalComponent.AlternateNameText = new[] { "Unknown Avg." };
                 }
                 else
                 {
@@ -203,25 +167,6 @@ namespace LiveSplit.WorldRecord.UI.Components
             }
         }
 
-        private bool IsPBTimeLower(TimeSpan? pbTime, TimeSpan? recordTime, bool showMillis)
-        {
-            if (pbTime == null || recordTime == null)
-                return false;
-            if (showMillis)
-                return (int)pbTime.Value.TotalMilliseconds <= (int)recordTime.Value.TotalMilliseconds;
-            return (int)pbTime.Value.TotalSeconds <= (int)recordTime.Value.TotalSeconds;
-        }
-
-        private TimeSpan? GetPBTime(Model.TimingMethod method)
-        {
-            var lastSplit = State.Run.Last();
-            var pbTime = lastSplit.PersonalBestSplitTime[method];
-            var splitTime = lastSplit.SplitTime[method];
-
-            if (State.CurrentPhase == TimerPhase.Ended && splitTime < pbTime)
-                return splitTime;
-            return pbTime;
-        }
 
         public void Update(IInvalidator invalidator, LiveSplitState state, float width, float height, LayoutMode mode)
         {
@@ -236,23 +181,21 @@ namespace LiveSplit.WorldRecord.UI.Components
             if (Cache.HasChanged)
             {
                 IsLoading = true;
-                WorldRecord = null;
-                ShowWorldRecord(mode);
-                Task.Factory.StartNew(RefreshWorldRecord);
+                AverageTime = null;
+                ShowAverageTime(mode);
+                Task.Factory.StartNew(RefreshAverageTime);
             }
             else if (LastUpdate != null && TimeStamp.Now - LastUpdate >= RefreshInterval)
             {
-                Task.Factory.StartNew(RefreshWorldRecord);
+                Task.Factory.StartNew(RefreshAverageTime);
             }
             else
             {
                 Cache["CenteredText"] = Settings.CenteredText && !Settings.Display2Rows && mode == LayoutMode.Vertical;
-                Cache["RealPBTime"] = GetPBTime(Model.TimingMethod.RealTime);
-                Cache["GamePBTime"] = GetPBTime(Model.TimingMethod.GameTime);
 
                 if (Cache.HasChanged)
                 {
-                    ShowWorldRecord(mode);
+                    ShowAverageTime(mode);
                 }
             }
 
@@ -296,10 +239,10 @@ namespace LiveSplit.WorldRecord.UI.Components
             }
             else
             {
-                InternalComponent.InformationName = "World Record";
+                InternalComponent.InformationName = "Average Time";
                 InternalComponent.AlternateNameText = new[]
                 {
-                    "WR"
+                    "Avg"
                 };
                 InternalComponent.NameLabel.HorizontalAlignment = StringAlignment.Near;
                 InternalComponent.ValueLabel.HorizontalAlignment = StringAlignment.Far;

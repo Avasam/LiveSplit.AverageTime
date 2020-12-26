@@ -1,6 +1,6 @@
 ﻿namespace LiveSplit.UI.Components
 {
-    partial class WorldRecordSettings
+    partial class AverageTimeSettings
     {
         /// <summary> 
         /// Required designer variable.
@@ -359,15 +359,15 @@
             this.chkVariables.Text = "Variables";
             this.chkVariables.UseVisualStyleBackColor = true;
             // 
-            // WorldRecordSettings
+            // AverageTimeSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.tableLayoutPanel1);
-            this.Name = "WorldRecordSettings";
+            this.Name = "AverageTimeSettings";
             this.Padding = new System.Windows.Forms.Padding(7);
             this.Size = new System.Drawing.Size(476, 294);
-            this.Load += new System.EventHandler(this.WorldRecordSettings_Load);
+            this.Load += new System.EventHandler(this.AverageTimeSettings_Load);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.groupBox1.ResumeLayout(false);
