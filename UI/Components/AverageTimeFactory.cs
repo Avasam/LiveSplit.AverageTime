@@ -1,4 +1,5 @@
-﻿using LiveSplit.Model;
+﻿using LiveSplit.AveragePrimaryTime.UI.Components;
+using LiveSplit.Model;
 using LiveSplit.UI.Components;
 using System;
 

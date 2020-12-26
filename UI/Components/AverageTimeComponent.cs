@@ -12,8 +12,9 @@ using System.Windows.Forms;
 using System.Xml;
 using SpeedrunComSharp;
 using LiveSplit.Options;
+using LiveSplit.AverageTime.Extensions;
 
-namespace LiveSplit.AverageTime.UI.Components
+namespace LiveSplit.AveragePrimaryTime.UI.Components
 {
     public class AverageTimeComponent : IComponent
     {
@@ -27,7 +28,7 @@ namespace LiveSplit.AverageTime.UI.Components
         private LiveSplitState State { get; set; }
         private TimeStamp LastUpdate { get; set; }
         private TimeSpan RefreshInterval { get; set; }
-        public Record AverageTime { get; protected set; }
+        public TimeSpan? AveragePrimaryTime { get; protected set; }
         private bool IsLoading { get; set; }
         private SpeedrunComClient Client { get; set; }
 
@@ -70,7 +71,7 @@ namespace LiveSplit.AverageTime.UI.Components
         {
             LastUpdate = TimeStamp.Now;
 
-            AverageTime = null;
+            AveragePrimaryTime = null;
 
             try
             {
@@ -89,15 +90,15 @@ namespace LiveSplit.AverageTime.UI.Components
                             emulatorFilter = EmulatorsFilter.NoEmulators;
                     }
 
-                    var leaderboard = Client.Leaderboards.GetLeaderboardForFullGameCategory(State.Run.Metadata.Game.ID, State.Run.Metadata.Category.ID, 
-                        top: 1,
+                    var leaderboard = Client.Leaderboards.GetLeaderboardForFullGameCategory(
+                        State.Run.Metadata.Game.ID,
+                        State.Run.Metadata.Category.ID, 
                         platformId: platformFilter, regionId: regionFilter, 
                         emulatorsFilter: emulatorFilter, variableFilters: variableFilter);
 
                     if (leaderboard != null)
                     {
-                        // TODO: This is where we get average time
-                        AverageTime = leaderboard.Records.FirstOrDefault();
+                        AveragePrimaryTime = leaderboard.Records.GetAveragePrimaryTime();
                     }
                 }
             }
@@ -113,9 +114,9 @@ namespace LiveSplit.AverageTime.UI.Components
         private void ShowAverageTime(LayoutMode mode)
         {
             var centeredText = Settings.CenteredText && !Settings.Display2Rows && mode == LayoutMode.Vertical;
-            if (AverageTime != null)
+            if (AveragePrimaryTime != null)
             {
-                var time = AverageTime.Times.Primary;
+                var time = AveragePrimaryTime;
                 var game = State.Run.Metadata.Game;
                 if (game != null)
                 {
@@ -126,12 +127,12 @@ namespace LiveSplit.AverageTime.UI.Components
 
                 if (centeredText)
                 {
-                    var textList = new List<string>();
-
-                    textList.Add(string.Format("Average Time is {0}", formatted));
-                    textList.Add(string.Format("Average Time: {0}", formatted));
-                    textList.Add(string.Format("Avg: {0}", formatted));
-                    textList.Add(string.Format("Avg. is {0}", formatted));
+                    var textList = new List<string> {
+                        string.Format("Average Time is {0}", formatted),
+                        string.Format("Average Time: {0}", formatted),
+                        string.Format("Avg: {0}", formatted),
+                        string.Format("Avg. is {0}", formatted)
+                    };
 
                     InternalComponent.InformationName = textList.First();
                     InternalComponent.AlternateNameText = textList;
@@ -181,7 +182,7 @@ namespace LiveSplit.AverageTime.UI.Components
             if (Cache.HasChanged)
             {
                 IsLoading = true;
-                AverageTime = null;
+                AveragePrimaryTime = null;
                 ShowAverageTime(mode);
                 Task.Factory.StartNew(RefreshAverageTime);
             }
