@@ -29,7 +29,8 @@ namespace LiveSplit.UI.Components
         public bool FilterVariables { get; set; }
         public bool FilterPlatform { get; set; }
         public bool FilterRegion { get; set; }
-
+        public bool ScoreDrop { get; set; }
+        
         public LayoutMode Mode { get; set; }
 
         public AverageTimeSettings()
@@ -48,6 +49,7 @@ namespace LiveSplit.UI.Components
             FilterVariables = false;
             FilterPlatform = false;
             FilterRegion = false;
+            ScoreDrop = false;
 
             chkOverrideTextColor.DataBindings.Add("Checked", this, "OverrideTextColor", false, DataSourceUpdateMode.OnPropertyChanged);
             btnTextColor.DataBindings.Add("BackColor", this, "TextColor", false, DataSourceUpdateMode.OnPropertyChanged);
@@ -59,6 +61,7 @@ namespace LiveSplit.UI.Components
             chkRegion.DataBindings.Add("Checked", this, "FilterRegion", false, DataSourceUpdateMode.OnPropertyChanged);
             chkPlatform.DataBindings.Add("Checked", this, "FilterPlatform", false, DataSourceUpdateMode.OnPropertyChanged);
             chkVariables.DataBindings.Add("Checked", this, "FilterVariables", false, DataSourceUpdateMode.OnPropertyChanged);
+            chkScoreDrop.DataBindings.Add("Checked", this, "ScoreDrop", false, DataSourceUpdateMode.OnPropertyChanged);
         }
 
         void chkOverrideTimeColor_CheckedChanged(object sender, EventArgs e)
@@ -113,6 +116,7 @@ namespace LiveSplit.UI.Components
             FilterRegion = SettingsHelper.ParseBool(element["FilterRegion"]);
             FilterPlatform = SettingsHelper.ParseBool(element["FilterPlatform"]);
             FilterVariables = SettingsHelper.ParseBool(element["FilterVariables"]);
+            ScoreDrop = SettingsHelper.ParseBool(element["ScoreDrop"]);
         }
 
         public XmlNode GetSettings(XmlDocument document)
@@ -141,7 +145,8 @@ namespace LiveSplit.UI.Components
             SettingsHelper.CreateSetting(document, parent, "CenteredText", CenteredText) ^
             SettingsHelper.CreateSetting(document, parent, "FilterRegion", FilterRegion) ^
             SettingsHelper.CreateSetting(document, parent, "FilterPlatform", FilterPlatform) ^
-            SettingsHelper.CreateSetting(document, parent, "FilterVariables", FilterVariables);
+            SettingsHelper.CreateSetting(document, parent, "FilterVariables", FilterVariables) ^
+            SettingsHelper.CreateSetting(document, parent, "ScoreDrop", ScoreDrop);
         }
 
         private void ColorButtonClick(object sender, EventArgs e)
@@ -163,6 +168,10 @@ namespace LiveSplit.UI.Components
                 chkCenteredText.DataBindings.Clear();
                 chkCenteredText.DataBindings.Add("Checked", this, "CenteredText", false, DataSourceUpdateMode.OnPropertyChanged);
             }
+        }
+
+        private void chkScoreDrop_CheckedChanged(object sender, EventArgs e) {
+
         }
     }
 }

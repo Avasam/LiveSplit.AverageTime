@@ -78,11 +78,17 @@ namespace LiveSplit.AveragePrimaryTime.UI.Components
                 if (State != null && State.Run != null
                     && State.Run.Metadata.Game != null && State.Run.Metadata.Category != null)
                 {
-                    var variableFilter = Settings.FilterVariables ? State.Run.Metadata.VariableValues.Values : null;
-                    var regionFilter = Settings.FilterRegion && State.Run.Metadata.Region != null ? State.Run.Metadata.Region.ID : null;
-                    var platformFilter = Settings.FilterPlatform && State.Run.Metadata.Platform != null ? State.Run.Metadata.Platform.ID : null;
+                    var variableFilter = Settings.FilterVariables
+                        ? State.Run.Metadata.VariableValues.Values
+                        : null;
+                    var regionFilter = Settings.FilterRegion && State.Run.Metadata.Region != null && !Settings.ScoreDrop
+                        ? State.Run.Metadata.Region.ID
+                        : null;
+                    var platformFilter = Settings.FilterPlatform && State.Run.Metadata.Platform != null && !Settings.ScoreDrop
+                        ? State.Run.Metadata.Platform.ID
+                        : null;
                     EmulatorsFilter emulatorFilter = EmulatorsFilter.NotSet;
-                    if (Settings.FilterPlatform)
+                    if (Settings.FilterPlatform && !Settings.ScoreDrop)
                     {
                         if (State.Run.Metadata.UsesEmulator)
                             emulatorFilter = EmulatorsFilter.OnlyEmulators;
@@ -93,12 +99,18 @@ namespace LiveSplit.AveragePrimaryTime.UI.Components
                     var leaderboard = Client.Leaderboards.GetLeaderboardForFullGameCategory(
                         State.Run.Metadata.Game.ID,
                         State.Run.Metadata.Category.ID, 
-                        platformId: platformFilter, regionId: regionFilter, 
-                        emulatorsFilter: emulatorFilter, variableFilters: variableFilter);
+                        platformId: platformFilter,
+                        regionId: regionFilter, 
+                        emulatorsFilter: emulatorFilter,
+                        variableFilters: variableFilter,
+                        filterOutRunsWithoutVideo: true);
 
+                    System.Diagnostics.Trace.Write(leaderboard);
                     if (leaderboard != null)
                     {
-                        AveragePrimaryTime = leaderboard.Records.GetAveragePrimaryTime();
+                        AveragePrimaryTime = Settings.ScoreDrop
+                            ? leaderboard.Records.GetScoreDropTime()
+                            : leaderboard.Records.GetAveragePrimaryTime();
                     }
                 }
             }
@@ -127,12 +139,21 @@ namespace LiveSplit.AveragePrimaryTime.UI.Components
 
                 if (centeredText)
                 {
-                    var textList = new List<string> {
-                        string.Format("Average Time is {0}", formatted),
-                        string.Format("Average Time: {0}", formatted),
-                        string.Format("Avg: {0}", formatted),
-                        string.Format("Avg. is {0}", formatted)
-                    };
+                    var textList = Settings.ScoreDrop
+                        ? new List<string> {
+                            string.Format("Goal Time is {0}", formatted),
+                            string.Format("Goal Time: {0}", formatted),
+                            string.Format("Goal is {0}", formatted),
+                            string.Format("Goal: {0}", formatted),
+                        }
+                        : new List<string> {
+                            string.Format("Average Time is {0}", formatted),
+                            string.Format("Average Time: {0}", formatted),
+                            string.Format("Average is {0}", formatted),
+                            string.Format("Average: {0}", formatted),
+                            string.Format("Avg. is {0}", formatted),
+                            string.Format("Avg: {0}", formatted)
+                        };
 
                     InternalComponent.InformationName = textList.First();
                     InternalComponent.AlternateNameText = textList;
@@ -146,8 +167,8 @@ namespace LiveSplit.AveragePrimaryTime.UI.Components
             {
                 if (centeredText)
                 {
-                    InternalComponent.InformationName = "Loading Average Time...";
-                    InternalComponent.AlternateNameText = new[] { "Loading Avg..." };
+                    InternalComponent.InformationName = $"Loading {(Settings.ScoreDrop ? "Goal" : "Average")} Time...";
+                    InternalComponent.AlternateNameText = new[] { $"Loading {(Settings.ScoreDrop ? "Goal" : "Avg")}..." };
                 }
                 else
                 {
@@ -158,8 +179,8 @@ namespace LiveSplit.AveragePrimaryTime.UI.Components
             {
                 if (centeredText)
                 {
-                    InternalComponent.InformationName = "Unknown Average Time";
-                    InternalComponent.AlternateNameText = new[] { "Unknown Avg." };
+                    InternalComponent.InformationName = $"Unknown {(Settings.ScoreDrop ? "Goal" : "Average")} Time";
+                    InternalComponent.AlternateNameText = new[] { $"Unknown {(Settings.ScoreDrop ? "Goal" : "Avg.")}" };
                 }
                 else
                 {
@@ -178,6 +199,7 @@ namespace LiveSplit.AveragePrimaryTime.UI.Components
             Cache["RegionID"] = Settings.FilterRegion ? state.Run.Metadata.RegionName : null;
             Cache["UsesEmulator"] = Settings.FilterPlatform ? (bool?)state.Run.Metadata.UsesEmulator : null;
             Cache["Variables"] = Settings.FilterVariables ? string.Join(",", state.Run.Metadata.VariableValueNames.Values) : null;
+            Cache["ScoreDrop"] = Settings.ScoreDrop;
 
             if (Cache.HasChanged)
             {

@@ -11,7 +11,7 @@ namespace LiveSplit.AverageTime.UI.Components
     {
         public string ComponentName => "Average Time";
 
-        public string Description => "Shows the Average Time for the run";
+        public string Description => "Shows the Average Time for the run. Or alternatively the goal time to drop a score on https://www.avasam.dev";
 
         public ComponentCategory Category => ComponentCategory.Information;
 
