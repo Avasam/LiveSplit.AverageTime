@@ -78,16 +78,27 @@ namespace LiveSplit.AveragePrimaryTime.UI.Components
                 if (State != null && State.Run != null
                     && State.Run.Metadata.Game != null && State.Run.Metadata.Category != null)
                 {
-                    var variableFilter = Settings.FilterVariables
-                        ? State.Run.Metadata.VariableValues.Values
+                    var subCategories = Client
+                        .Games
+                        .GetVariables(State.Run.Metadata.Game.ID)
+                        .Where(variable => variable.IsSubcategory)
+                        .ToList();
+                    var variableFilterValues = Settings.FilterVariables
+                        ? State
+                            .Run
+                            .Metadata
+                            .VariableValues
                         : null;
+                    var variableFilter = Settings.ScoreDrop
+                        ? variableFilterValues?.Where(keyValue => subCategories.Contains(keyValue.Key)).Values
+                        : variableFilterValues?.Values;
                     var regionFilter = Settings.FilterRegion && State.Run.Metadata.Region != null && !Settings.ScoreDrop
                         ? State.Run.Metadata.Region.ID
                         : null;
                     var platformFilter = Settings.FilterPlatform && State.Run.Metadata.Platform != null && !Settings.ScoreDrop
                         ? State.Run.Metadata.Platform.ID
                         : null;
-                    EmulatorsFilter emulatorFilter = EmulatorsFilter.NotSet;
+                    var emulatorFilter = EmulatorsFilter.NotSet;
                     if (Settings.FilterPlatform && !Settings.ScoreDrop)
                     {
                         if (State.Run.Metadata.UsesEmulator)
@@ -135,7 +146,7 @@ namespace LiveSplit.AveragePrimaryTime.UI.Components
                     LocalTimeFormatter.Accuracy = game.Ruleset.ShowMilliseconds ? TimeAccuracy.Hundredths : TimeAccuracy.Seconds;
                 }
 
-                var formatted = TimeFormatter.Format(time);
+                var formatted = (TimeSpan)AveragePrimaryTime > TimeSpan.Zero ? TimeFormatter.Format(time) : "Impossible";
 
                 if (centeredText)
                 {
