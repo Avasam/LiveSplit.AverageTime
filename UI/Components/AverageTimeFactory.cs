@@ -5,6 +5,15 @@ using System;
 
 [assembly:ComponentFactory(typeof(LiveSplit.AverageTime.UI.Components.AverageTimeFactory))]
 
+public interface IComponentFactory
+{
+    string ComponentName { get; }
+    string Description { get; }
+    ComponentCategory Category { get; }
+
+    IComponent Create(LiveSplitState state);
+}
+
 namespace LiveSplit.AverageTime.UI.Components
 {
     public class AverageTimeFactory : IComponentFactory

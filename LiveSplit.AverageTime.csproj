@@ -43,23 +43,15 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="LiveSplit.Core">
-      <HintPath>..\..\..\..\..\Program Files\LiveSplit_1.7.6\LiveSplit.Core.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="SpeedrunComSharp">
-      <HintPath>..\..\..\..\..\Program Files\LiveSplit_1.7.6\SpeedrunComSharp.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="LiveSplit.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\LiveSplit.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="UpdateManager">
-      <HintPath>..\..\..\..\..\Program Files\LiveSplit_1.7.6\UpdateManager.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\DictionaryExtensions.cs" />
@@ -78,6 +70,12 @@
     <EmbeddedResource Include="UI\Components\AverageTimeSettings.resx">
       <DependentUpon>AverageTimeSettings.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="SpeedrunComSharp\SpeedrunComSharp\SpeedrunComSharp.csproj">
+      <Project>{924aaffe-5b89-49e2-99ad-ec9373cc838d}</Project>
+      <Name>SpeedrunComSharp</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
