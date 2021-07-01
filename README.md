@@ -1,6 +1,7 @@
 # LiveSplit.AverageTime
 
-A LiveSplit Component that queries speedrun.com and shows the Average Time
+A LiveSplit Component that queries speedrun.com and shows the Average Time  
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Avasam_LiveSplit.AverageTime&metric=alert_status)](https://sonarcloud.io/dashboard?id=Avasam_LiveSplit.AverageTime)
 
 Based on [LiveSplit/LiveSplit.WorldRecord@bb6c710](https://github.com/LiveSplit/LiveSplit.WorldRecord/commit/bb6c710c3e32e79c3f06c593dd211e82e6727483)
 
